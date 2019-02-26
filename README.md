@@ -77,14 +77,3 @@ robot spark-1m3s-smoketest.robot
 #### SPARK
 
 [SPARK history / Web UI HTTP](http://master:19888/jobhistory)
-
-
-# Usage
-
-## Further Links
-
-	* [yarn-default.xml](https://hadoop.apache.org/docs/r3.1.1/hadoop-yarn/hadoop-yarn-common/yarn-default.xml)
-	* [core-default.xml](https://hadoop.apache.org/docs/r3.1.1/hadoop-project-dist/hadoop-common/core-default.xml)
-	* [hdfs-default.xml](https://hadoop.apache.org/docs/r3.1.1/hadoop-project-dist/hadoop-hdfs/hdfs-default.xml)
-	* [Spark Documentation](https://spark.apache.org/docs/latest/)
-	* [Apache Cassandra Documentation](http://cassandra.apache.org/doc/latest/)
