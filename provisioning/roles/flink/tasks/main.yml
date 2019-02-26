@@ -1,0 +1,80 @@
+--
+- name: download {{ file }}
+  run_once: true
+  get_url:
+    url: "{{ url }}"
+    dest: "{{ download }}/{{ file }}"
+    force: no
+
+- name: extract {{ file }}
+  become: yes
+  unarchive:
+    src: "{{ download }}/{{ file }}"
+    dest: "{{ usr_local }}"
+    copy: no
+    creates: "{{ flink_home }}"
+    owner: vagrant
+    group: vagrant
+
+- name: link {{ flink }} to {{ usr_local }}/flink
+  become: yes
+  file:
+    src: "{{ usr_local }}/{{ flink }}"
+    dest: "{{ usr_local }}/flink"
+    owner: vagrant
+    group: vagrant
+    state: link
+
+- name: create directories
+  become: yes
+  file:
+    path: "{{ item }}"
+    owner: vagrant
+    group: vagrant
+    mode: 0755
+    state: directory
+  with_items:
+    - "{{ spark_conf_dir }}"
+    - "{{ spark_events_dir }}"
+    - "{{ spark_log_dir }}"
+    - "{{ spark_worker_dir }}"
+
+- name: generate {{ spark_conf_dir }} config files
+  become: yes
+  template:
+    src: "templates/{{ item }}.j2"
+    dest: "{{ spark_conf_dir }}/{{ item }}"
+  with_items:
+    - fairscheduler.xml
+    - log4j.properties
+    - metrics.properties
+    - spark-defaults.conf
+    - spark-env.sh
+
+- name: generate spark.sh in profile.d
+  become: yes
+  template:
+    src: templates/spark.sh.j2
+    dest: "{{ etc_profiles }}/spark.sh"
+
+- name: create systemd units
+  become: yes
+  when: item.host in inventory_hostname
+  template:
+    src: "templates/{{ item.svc }}.service.j2"
+    dest: "{{ system_units }}/{{ item.svc }}.service"
+  with_items:
+    - { svc: 'spark-standalone-master', host: 'master' }
+    - { svc: 'spark-standalone-slave',  host: 'slave'  }
+    - { svc: 'spark-history',           host: 'master' }
+
+- name: enable systemd units
+  become: yes
+  when: item.host in inventory_hostname
+  systemd:
+    enabled: yes
+    name: "{{ item.svc }}.service"
+  with_items:
+    - { svc: 'spark-standalone-master', host: 'master' }
+    - { svc: 'spark-standalone-slave',  host: 'slave'  }
+    - { svc: 'spark-history',           host: 'master' }

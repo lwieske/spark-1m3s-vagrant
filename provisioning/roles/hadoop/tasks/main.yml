@@ -1,0 +1,85 @@
+---
+- name: download {{ file }}
+  run_once: true
+  get_url:
+    url: "{{ url }}"
+    dest: "{{ download }}/{{ file }}"
+    force: no
+
+- name: extract {{ file }}
+  become: yes
+  unarchive:
+    src: "{{ download }}/{{ file }}"
+    dest: "{{ usr_local }}"
+    copy: no
+    creates: "{{ hadoop_home }}"
+    owner: vagrant
+    group: vagrant
+
+- name: link {{ hadoop }} to {{ usr_local }}/hadoop
+  become: yes
+  file:
+    src: "{{ hadoop }}"
+    dest: "{{ usr_local }}/hadoop"
+    owner: vagrant
+    group: vagrant
+    state: link
+
+- name: create {{ hadoop_log_dir }}
+  become: yes
+  file:
+    path: "{{ hadoop_log_dir }}"
+    state: directory
+    mode: "u+rwx,g+rwx,o+rwx"
+
+- name: generate {{ hadoop_conf_dir }} config files
+  become: yes
+  template:
+    src: "templates/{{ item }}.j2"
+    dest: "{{ hadoop_conf_dir }}/{{ item }}"
+  with_items:
+    - core-site.xml
+    - hdfs-site.xml
+    - yarn-site.xml
+
+#    - capacity-scheduler.xml
+
+- name: generate hadoop.sh in profile.d
+  become: yes
+  template:
+    src: templates/hadoop.sh.j2
+    dest: "{{ etc_profiles }}/hadoop.sh"
+
+- name: format hdfs namenode
+  when: ('master' in inventory_hostname)
+  command: "{{ hadoop_home}}/bin/hdfs namenode -format"
+  environment:
+    JAVA_HOME: "/usr/java/latest"
+  args:
+    creates: /tmp/hadoop-{{ ansible_user }}/dfs/name
+
+- name: create systemd units
+  become: yes
+  when: item.host in inventory_hostname
+  template:
+    src: "templates/{{ item.svc }}.service.j2"
+    dest: "{{ system_units }}/{{ item.svc }}.service"
+  with_items:
+    - { svc: 'hdfs-namenode',        host: 'master' }
+    - { svc: 'hdfs-datanode',        host: 'slave'  }
+    - { svc: 'yarn-resourcemanager', host: 'master' }
+    - { svc: 'yarn-nodemanager',     host: 'slave'  }
+    - { svc: 'mrv2-history',         host: 'master' }
+
+- name: enable systemd units
+  become: yes
+  when: item.host in inventory_hostname
+  systemd:
+    enabled: yes
+    name: "{{ item.svc }}.service"
+  with_items:
+    - { svc: 'hdfs-namenode',        host: 'master' }
+    - { svc: 'hdfs-datanode',        host: 'slave'  }
+    - { svc: 'yarn-resourcemanager', host: 'master' }
+    - { svc: 'yarn-nodemanager',     host: 'slave'  }
+    - { svc: 'mrv2-history',         host: 'master' }

@@ -1,0 +1,17 @@
+[Unit]
+Description=Flink
+After=yarn-resourcemanager.service
+
+[Service]
+Environment=JAVA_HOME=/usr/java/latest
+Environment=HADOOP_HOME={{ usr_local }}/hadoop
+Environment=HADOOP_CONF_DIR={{ usr_local }}/hadoop/etc/hadoop
+Type=forking
+User=vagrant
+ExecStart={{ flink_home }}/bin/yarn-session.sh -n 3 -jm 768 -tm 768 -s 2 -d
+RemainAfterExit=yes
+ExecStop={{ flink_home }}/bin/stop-flink-yarn.sh
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

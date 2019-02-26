@@ -1,0 +1,7 @@
+.vagrant
+download
+varlog
+*.retry
+log.html
+output.xml
+report.html

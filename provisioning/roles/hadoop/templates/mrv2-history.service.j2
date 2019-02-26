@@ -1,0 +1,17 @@
+[Unit]
+Description=MRV2 history service
+After=network.target
+
+[Service]
+Environment=JAVA_HOME=/usr/java/latest
+Environment=HADOOP_HOME={{ hadoop_home }}
+Environment=HADOOP_CONF_DIR={{ hadoop_conf_dir }}
+Environment=HADOOP_LOG_DIR={{ hadoop_log_dir }}
+Type=forking
+User=vagrant
+ExecStart={{ hadoop_home }}/bin/mapred --config $HADOOP_CONF_DIR --daemon start historyserver
+ExecStop={{ hadoop_home }}/bin/mapred --config $HADOOP_CONF_DIR --daemon stop historyserver
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

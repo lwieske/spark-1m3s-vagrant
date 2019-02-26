@@ -1,0 +1,51 @@
+---
+- name: Install prerequisite for SELinux Ansible module
+  become: true
+  package:
+    name:
+      - libselinux-python
+      - libsemanage-python
+    state: present
+
+# - name: Install native libraries for hadoop
+#   become: true
+#   package:
+#     name:
+#       - libzstd
+#       - openssl
+#       - openssl-libs
+#     state: present
+
+- name: Disable SELinux at next reboot
+  become: true
+  selinux:
+    state: disabled
+
+- name: disable ipv6
+  become: yes
+  template:
+    src: templates/disableipv6.conf.j2
+    dest: "/etc/sysctl.d/disableipv6.conf"
+
+- name: Delete first line in /etc/hosts
+  become: yes
+  lineinfile:
+    dest: /etc/hosts
+    state: absent
+    regexp: '^127\.0\.0\.1\s[ms]'
+
+- name: Delete ipv6 in /etc/hosts
+  become: yes
+  lineinfile:
+    dest: /etc/hosts
+    state: absent
+    regexp: '^\:\:1'
+
+- name: Allow cluster interaction
+  become: true
+  copy:
+    dest: /etc/hosts.allow
+    content: |
+      #
+      ALL : ALL
+      #
