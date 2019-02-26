@@ -1,8 +1,6 @@
 # Hadoop 3.2.0 + Spark 2.4.0
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/Hadoop_logo_new.svg/1280px-Hadoop_logo_new.svg.png)
-
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Apache_Spark_logo.svg/320px-Apache_Spark_logo.svg.png)
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/Hadoop_logo_new.svg/640px-Hadoop_logo_new.svg.png)![](https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Apache_Spark_logo.svg/320px-Apache_Spark_logo.svg.png)
 
 | **Component** | **Version** |
 |---|---|
